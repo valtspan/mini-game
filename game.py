@@ -1,75 +1,40 @@
 import pygame 
 from pygame.locals import *
-
-# class App:
-#     def __init__(self):
-#         self._running = True
-#         self._display_surf = None
-#         self.size = self.weight, self.height = 640, 400
-   
-#     # initialize PyGAme modules
-#     # create main display
-#     # use hardware acceleration
-#     def on_init(self):
-#         pygame.init()
-#         self._display_surf = pygame.display.set_mode(self.size, pygame.HWSURFACE | pygame.DOUBLEBUF)
-#         self._running = True
-#         widndow = pygame
-#         self._image_surf = pygame.image.load("./Forest/Preview/Background.png")
- 
-#     def on_event(self, event):
-#         if event.type == pygame.QUIT:
-#             self._running = False
-
-#     def on_loop(self):
-#         pass
-
-#     def on_render(self):
-#         self._display_surf.blit(self._image_surf, (0,0))
-
-#     # quits all pygame modules
-#     def on_cleanup(self):
-#         pygame.quit()
- 
-#     def on_execute(self):
-#         if self.on_init() == False:
-#             self._running = False
- 
-#         while( self._running ):
-#             for event in pygame.event.get():
-#                 self.on_event(event)
-#             self.on_loop()
-#             self.on_render()
-#         self.on_cleanup()
-
-# if __name__ == "__main__" :
-#     theApp = App()
-#     theApp.on_execute()
+import spritesheet
 
 pygame.init()
 
 clock = pygame.time.Clock()
 FPS = 60
+scroll = 0
 
 width, height = 1000, 500
 window = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Parallax")
 
-scroll = 0
+# sprite things
+sprite_sheet_image = pygame.image.load("./BotWheel/move_with_FX.png").convert_alpha()
+sprite_sheet = spritesheet.SpriteSheet(sprite_sheet_image)
 
-ground_image = pygame.image.load("./Forest/PNG/Background/Layer_0000.png")
-ground_image = pygame.transform.scale(ground_image, (width,height))
-ground_width = ground_image.get_width()
-ground_height = ground_image.get_height()
+#create animation list
+animation_list = []
+animation_steps = 4
+last_update = pygame.time.get_ticks()
+animation_cooldown = 500
+frame = 0
 
+for x in range(animation_steps):
+    animation_list.append(sprite_sheet.get_sprite_image(x, 35, 26, 3))
+
+
+# background
 bg_images = []
 for i in range(0, 12):
     n = i // 10
     m = i % 10
-    bg_image = pygame.image.load(f"./Forest/PNG/Background/Layer_00{n}{m}.png")
+    bg_image = pygame.image.load(f"./Forest/PNG/Background/Layer_00{n}{m}.png").convert_alpha()
     bg_image = pygame.transform.scale(bg_image, (width,height))
     bg_images.append(bg_image)
-
 
 def draw_bg():
     for x in range(3):
@@ -78,10 +43,7 @@ def draw_bg():
             window.blit(i, (x * width + scroll * speed, 0))
             speed += 0.2
 
-# def draw_ground():
-#     for x in range(15):
-#         window.blit(ground_image, ((x * ground_width) - scroll * 2.2, height - ground_height))
-
+# game loop
 i = 0
 runing = True
 while runing:
@@ -89,6 +51,18 @@ while runing:
 
     draw_bg()
 
+    window.blit(animation_list[frame], (0, 0))
+
+    # update animation
+    current_time = pygame.time.get_ticks()
+    if current_time - last_update >= animation_cooldown:
+        frame += 1
+        last_update = current_time
+        if frame == animation_steps:
+                frame = 0
+        
+
+    # move background
     key = pygame.key.get_pressed()
     if key[pygame.K_LEFT] and scroll < 0:
         scroll += 5
