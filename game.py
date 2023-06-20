@@ -2,54 +2,11 @@ from os import listdir
 from player import Player
 import pygame 
 from pygame.locals import *
+import spritesheet
 from os.path import isfile, join
+from pygame import mixer
 
-# class App:
-#     def __init__(self):
-#         self._running = True
-#         self._display_surf = None
-#         self.size = self.weight, self.height = 640, 400
-   
-#     # initialize PyGAme modules
-#     # create main display
-#     # use hardware acceleration
-#     def on_init(self):
-#         pygame.init()
-#         self._display_surf = pygame.display.set_mode(self.size, pygame.HWSURFACE | pygame.DOUBLEBUF)
-#         self._running = True
-#         widndow = pygame
-#         self._image_surf = pygame.image.load("./Forest/Preview/Background.png")
- 
-#     def on_event(self, event):
-#         if event.type == pygame.QUIT:
-#             self._running = False
-
-#     def on_loop(self):
-#         pass
-
-#     def on_render(self):
-#         self._display_surf.blit(self._image_surf, (0,0))
-
-#     # quits all pygame modules
-#     def on_cleanup(self):
-#         pygame.quit()
- 
-#     def on_execute(self):
-#         if self.on_init() == False:
-#             self._running = False
- 
-#         while( self._running ):
-#             for event in pygame.event.get():
-#                 self.on_event(event)
-#             self.on_loop()
-#             self.on_render()
-#         self.on_cleanup()
-
-# if __name__ == "__main__" :
-#     theApp = App()
-#     theApp.on_execute()
-
-PLAYER_VEL = 10
+PLAYER_VEL = 5
 scroll = 0
 SCROLL_VEL = 5
 offset_x = 0
@@ -58,6 +15,7 @@ pygame.init()
 
 clock = pygame.time.Clock()
 FPS = 60
+scroll = 0
 
 width, height = 1200, 800
 window = pygame.display.set_mode((width, height))
@@ -68,7 +26,22 @@ ground_image = pygame.image.load("./Forest/PNG/Background/Layer_0000.png")
 ground_image = pygame.transform.scale(ground_image, (width,height))
 ground_width = ground_image.get_width()
 ground_height = ground_image.get_height()
+# sprite things
+sprite_sheet_image = pygame.image.load("./BotWheel/move_with_FX.png").convert_alpha()
+sprite_sheet = spritesheet.SpriteSheet(sprite_sheet_image)
 
+#create animation list
+animation_lists = {"right": [], "left": [] }
+animation_steps = 4
+last_update = pygame.time.get_ticks()
+animation_cooldown = 500
+frame = 0
+
+for x in range(animation_steps):
+    animation_lists["right"].append(sprite_sheet.get_sprite_image(x, 35, 26, 3))
+    animation_lists["left"].append(pygame.transform.flip(sprite_sheet.get_sprite_image(x, 35, 26, 3), True, False))
+
+# background
 bg_images = []
 for i in range(0, 1):
     n = i // 10
@@ -96,6 +69,13 @@ def load_sprite_sheets(width, height):
         all_sprites[image.replace(".png", "")] = sprites
 
     return all_sprites
+
+# SOUND
+mixer.init()
+channel0 = mixer.Channel(0)
+channel1 = mixer.Channel(1)
+channel0.play(mixer.Sound('hiding-in-the-forest.mp3'), -1)
+
 
 class Object(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height, name=None):
@@ -150,6 +130,14 @@ class Cherry(Object):
         if self.animation_count // self.ANIMATION_DELAY > len(sprites):
             self.animation_count = 0
 
+class Trophy(Object):
+    ANIMATION_DELAY = 3
+
+    def __init__(self, x, y, width, height):
+        super().__init__(x, y, width, height, "trophy")
+        image = pygame.image.load("trophy.png").convert_alpha()
+        self.image = pygame.transform.scale(image, (width,height))
+
 def get_block(size):
     path = join("Terrain.png")
     image = pygame.image.load(path).convert()
@@ -176,6 +164,8 @@ def draw(player, objects):
         if abs(player.rect.x - obj.rect.x < width): 
             obj.draw(window, offset_x)
 
+    #window.blit(animation_list[frame], (0, 0))
+
     pygame.display.update()
 
 def collide(player, objects, dx):
@@ -201,8 +191,25 @@ def handle_move(player, objects):
     has_collided_left = collide(player, objects, -PLAYER_VEL)
     has_collided_right = collide(player, objects, PLAYER_VEL)
 
+    removes = []
+    for obj in objects:
+        if isinstance(obj, Cherry) and pygame.sprite.collide_rect(player, obj):
+            removes.append(obj)
+            channel1.play(mixer.Sound('item-pickup.mp3'))
+        if isinstance(obj, Trophy) and pygame.sprite.collide_rect(player, obj):
+            removes.append(obj)
+            channel1.play(mixer.Sound('tadaa.mp3'))
+
+    for obj in removes:
+        objects.remove(obj)
+
+    if has_collided_left is Cherry:
+        mixer.music.load('item-pickup.mp3')
+        mixer.music.play()
+        
     if keys[pygame.K_LEFT] and not has_collided_left:
         player.move_left(PLAYER_VEL)
+        
         # if scroll < 0:
         #   scroll += SCROLL_VEL
 
@@ -229,29 +236,66 @@ def handle_vertical_collision(player, objects, dy):
 
     return collided_objects
 
-player = Player(width * 0.2, height * 0.2, 75, 75)
+player = Player(width * 0.2, height * 0.5, 75, 75, animation_lists)
 
 running = True
+
+
+
+block_size = 96
+
+cherries = [Cherry(block_size * 6, height - block_size * 1.5, 32, 32),
+            Cherry(block_size * 7, height - block_size * 3.5, 32, 32),
+            Cherry(block_size * 11, height - block_size * 4.5, 32, 32),
+            Cherry(block_size * 13, height - block_size * 4.5, 32, 32),
+            Cherry(block_size * 18, height - block_size * 6.5, 32, 32),
+            Cherry(block_size * 26, height - block_size * 4.5, 32, 32),
+            Cherry(block_size * 32, height - block_size * 2.5, 32, 32),
+            Cherry(block_size * 35, height - block_size * 1.5, 32, 32),
+            Cherry(block_size * 45, height - block_size * 3.5, 32, 32),
+            ]
+
+floor = [Block(i * block_size, height - block_size, block_size)
+            for i in range(0, (width * 2) // block_size)]
+blocks = [Block(block_size * 5, height - block_size * 2, block_size),
+            Block(block_size * 7, height - block_size * 3, block_size),
+            Block(block_size * 8, height - block_size * 4, block_size),
+            Block(block_size * 11, height - block_size * 4, block_size),
+            Block(block_size * 13, height - block_size * 4, block_size),
+            Block(block_size * 15, height - block_size * 5, block_size),
+            Block(block_size * 18, height - block_size * 5, block_size),
+            Block(block_size * 20, height - block_size * 6, block_size),
+            Block(block_size * 23, height - block_size * 4, block_size),
+            Block(block_size * 26, height - block_size, block_size),
+            Block(block_size * 28, height - block_size, block_size),
+            Block(block_size * 30, height - block_size * 2, block_size),
+            Block(block_size * 32, height - block_size * 1, block_size),
+            Block(block_size * 35, height - block_size * 1, block_size),
+            Block(block_size * 37, height - block_size * 2, block_size),
+            Block(block_size * 39, height - block_size * 2, block_size),
+            Block(block_size * 42, height - block_size * 3, block_size),
+            Block(block_size * 42, height - block_size * 3, block_size),
+            Block(block_size * 46, height - block_size * 1, block_size),
+            Block(block_size * 47, height - block_size * 1, block_size),
+            Block(block_size * 48, height - block_size * 1, block_size),
+            Block(block_size * 49, height - block_size * 1, block_size),
+            Block(block_size * 50, height - block_size * 1, block_size)]
+objects = [*floor, *blocks, *cherries, Trophy(block_size * 50, height - block_size * 2, block_size, block_size)]
 
 while running:
     clock.tick(FPS)
 
-    block_size = 96
+    
+    
 
-    cherries = [Cherry(block_size * 6, height - block_size * 2.5, 32, 32),
-                Cherry(block_size * 7, height - block_size * 3.5, 32, 32)
-                ]
-
-    floor = [Block(i * block_size, height - block_size, block_size)
-             for i in range(0, (width * 2) // block_size)]
-    blocks = [Block(block_size * 6, height - block_size * 2, block_size),
-               Block(block_size * 7, height - block_size * 3, block_size),
-               Block(block_size * 8, height - block_size * 4, block_size),
-               Block(block_size * 11, height - block_size * 4, block_size),
-               Block(block_size * 13, height - block_size * 4, block_size),
-               Block(block_size * 15, height - block_size * 5, block_size)]
-    objects = [*floor, *blocks, *cherries]
-
+    # update animation
+    # current_time = pygame.time.get_ticks()
+    # if current_time - last_update >= animation_cooldown:
+    #     frame += 1
+    #     last_update = current_time
+    #     if frame == animation_steps:
+    #             frame = 0
+        
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
