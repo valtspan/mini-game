@@ -15,7 +15,6 @@ pygame.init()
 clock = pygame.time.Clock()
 FPS = 60
 
-# <<<<<<< HEAD
 def get_sprite_image(sheet, frame, width, height, scale):
     image = pygame.Surface((width, height)).convert_alpha()
     image.blit(sheet, (0, 0), ((frame * width), 0, width, height))
@@ -25,9 +24,7 @@ def get_sprite_image(sheet, frame, width, height, scale):
 
     return image
 
-# =======
 width, height = 1200, 800
-# >>>>>>> cherry-frog
 window = pygame.display.set_mode((width, height))
 pygame.display.set_caption("Mini-Game Day")
 
@@ -36,24 +33,11 @@ ground_image = pygame.image.load("./Forest/PNG/Background/Layer_0000.png")
 ground_image = pygame.transform.scale(ground_image, (width,height))
 ground_width = ground_image.get_width()
 ground_height = ground_image.get_height()
-# sprite things
-# sprite_sheet_image = pygame.image.load("./BotWheel/move_with_FX.png").convert_alpha()
-# sprite_sheet = spritesheet.SpriteSheet(sprite_sheet_image)
 
-#create animation list
-# <<<<<<< HEAD
-# all_animations = {}
-# =======
 all_animations = {"right": {}, "left": {} }
-# >>>>>>> cherry-frog
-# animation_steps = 4
 last_update = pygame.time.get_ticks()
-# animation_cooldown_wake = 700
-# animation_cooldown = 1000
 frame = 0
 
-# <<<<<<< HEAD
-# load animation for number of steps
 sprite_width = 64 
 sprite_height = 64
 
@@ -68,30 +52,17 @@ for path in paths:
         flipped = pygame.transform.flip(get_sprite_image(sprite_sheet, x, 64, 64, 2.6), True, False)
         flipped.set_colorkey((0,0,0))
         animation_flipped.append(flipped)
-        # animation_flipped.append(get_sprite_image(sprite_sheet_flipped, x, 65, 26, 3))
     all_animations["right"][path] = animation
     all_animations["left"][path] = animation_flipped
 
-# =======
-# for x in range(animation_steps):
-    # animation_lists["right"].append(sprite_sheet.get_sprite_image(x, 35, 26, 3))
-    # animation_lists["left"].append(pygame.transform.flip(sprite_sheet.get_sprite_image(x, 35, 26, 3), True, False))
-# >>>>>>> cherry-frog
 
 # background
 bg_images = []
-# for i in range(0, 12):
-#     n = i // 10
-#     m = i % 10
-#     bg_image = pygame.image.load(f"./Forest/PNG/Background/Layer_00{m}{n}.png")
-#     # bg_image = pygame.image.load("Background.png").convert()
-#     bg_image = pygame.transform.scale(bg_image, (width,height))
-#     bg_images.append(bg_image)
-
-for i in range(0, 12):
+for i in range(0, 1):
     n = i // 10
     m = i % 10
-    bg_image = pygame.image.load(f"./Forest/PNG/Background/Layer_00{n}{m}.png")
+    # bg_image = pygame.image.load(f"./Forest/PNG/Background/Layer_00{n}{m}.png")
+    bg_image = pygame.image.load("Background.png").convert()
     bg_image = pygame.transform.scale(bg_image, (width,height))
     bg_images.append(bg_image)
 
@@ -200,13 +171,6 @@ def draw_bg():
             window.blit(i, (x * width + scroll * speed, 0))
             speed += 0.2
 
-# <<<<<<< HEAD
-# game loop
-# i = 0
-# runing = True
-# mode = "wake"
-# while runing:
-# =======
 def draw_player(player):
     player.draw(window, offset_x)
 
@@ -217,8 +181,6 @@ def draw(player, objects):
     for obj in objects:
         if abs(player.rect.x - obj.rect.x < width): 
             obj.draw(window, offset_x)
-
-    #window.blit(animation_list[frame], (0, 0))
 
     pygame.display.update()
 
@@ -264,13 +226,8 @@ def handle_move(player, objects):
     if keys[pygame.K_LEFT] and not has_collided_left:
         player.move_left(PLAYER_VEL)
         
-        # if scroll < 0:
-          # scroll += SCROLL_VEL
-
     if keys[pygame.K_RIGHT] and not has_collided_right:
         player.move_right(PLAYER_VEL)
-        # if scroll < -500:
-            # scroll -= SCROLL_VEL
 
     handle_vertical_collision(player, objects, player.y_vel)
 
@@ -291,10 +248,6 @@ def handle_vertical_collision(player, objects, dy):
     return collided_objects
 
 player = Player(width * 0.2, height * 0.5, 75, 75, all_animations)
-
-running = True
-
-
 
 block_size = 96
 
@@ -336,59 +289,16 @@ blocks = [Block(block_size * 5, height - block_size * 2, block_size),
             Block(block_size * 50, height - block_size * 1, block_size)]
 objects = [*floor, *blocks, *cherries, Trophy(block_size * 50, height - block_size * 2, block_size, block_size)]
 
+running = True
+
 while running:
-# >>>>>>> cherry-frog
     clock.tick(FPS)
-    # animation_cooldown_wake = 700
-    # animation_cooldown = 1000
 
-# <<<<<<< HEAD
-#     draw_bg()
-    
-#     window.blit(all_animations[mode][frame], (0, 0))
-
-#     # update animation
-#     current_time = pygame.time.get_ticks()
-#     if current_time - last_update >= animation_cooldown_wake:
-#         frame += 1
-#         last_update = current_time
-#         if frame == animation_steps:
-#             frame = 0
-# =======
-    
-
-    # update animation
-    # current_time = pygame.time.get_ticks()
-    # if current_time - last_update >= animation_cooldown:
-    #     frame += 1
-    #     last_update = current_time
-    #     if frame == animation_steps:
-    #             frame = 0
-# >>>>>>> cherry-frog
-        
-# <<<<<<< HEAD
-        # if event.type == QUIT:
-            # runing = False
-        # if event.type == pygame.KEYDOWN:
-            # if event.key == pygame.K_SPACE:
-                # mode = "shoot"
-            # if event.key == pygame.K_RIGHT:
-                # mode = "move"
-        # if event.type == pygame.KEYUP:
-            # if event.key == pygame.K_SPACE:
-                # mode = "wake"
-            # if event.key == pygame.K_RIGHT:
-                # mode = "wake"
-
-
-    # pygame.display.update()
-# =======
-
-    key = pygame.key.get_pressed()
-    if key[pygame.K_LEFT] and scroll < 0:
-        scroll += 5
-    if key[pygame.K_RIGHT] and scroll > -500:
-        scroll -= 5 
+    # key = pygame.key.get_pressed()
+    # if key[pygame.K_LEFT] and scroll < 0:
+    #     scroll += 5
+    # if key[pygame.K_RIGHT] and scroll > -500:
+    #     scroll -= 5 
 
     for event in pygame.event.get():
        if event.type == pygame.QUIT:
@@ -407,5 +317,4 @@ while running:
                 (player.rect.left - offset_x < width * 0.2) and player.x_vel < 0):
             offset_x += player.x_vel
     
-# >>>>>>> cherry-frog
 pygame.quit()
