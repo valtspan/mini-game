@@ -53,7 +53,7 @@ class Player(pygame.sprite.Sprite):
         self.frame_count += 1
 
     def draw(self, win, offset_x):
-        win.blit(self.sprite, (self.rect.x - offset_x, self.rect.y - 50))
+        win.blit(self.sprite, (self.rect.x - offset_x - 50, self.rect.y - 50))
 
     def landed(self):
         self.fall_count = 0
