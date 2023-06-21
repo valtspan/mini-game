@@ -10,7 +10,7 @@ class Player(pygame.sprite.Sprite):
        self.x_vel = 0
        self.y_vel = 0
        self.mask = None
-       self.direction = "left"
+       self.direction = "right"
        self.frame_count = 0
        self.fall_count = 0
        image = pygame.image.load("fall.png").convert_alpha()
@@ -37,6 +37,8 @@ class Player(pygame.sprite.Sprite):
             self.direction = "right"
             self.frame_count = 0
 
+
+    # Advance player state
     def loop(self, fps):
         self.y_vel += min(1, (self.fall_count / fps) * self.GRAVITY)
         self.move(self.x_vel, self.y_vel)
