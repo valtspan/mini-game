@@ -13,6 +13,7 @@ class Player(pygame.sprite.Sprite):
        self.direction = "left"
        self.frame_count = 0
        self.fall_count = 0
+       self.jump_count = 0
        image = pygame.image.load("fall.png").convert_alpha()
        self.image = pygame.transform.scale(image, (width,height))
        self.mode = "walk"

@@ -7,13 +7,16 @@ from pygame import mixer
 
 PLAYER_VEL = 5
 scroll = 0
-SCROLL_VEL = 5
 offset_x = 0
+width, height = 1200, 800
 
 pygame.init()
 
 clock = pygame.time.Clock()
 FPS = 60
+
+window = pygame.display.set_mode((width, height))
+pygame.display.set_caption("Mini-Game Day")
 
 def get_sprite_image(sheet, frame, width, height, scale):
     image = pygame.Surface((width, height)).convert_alpha()
@@ -24,47 +27,38 @@ def get_sprite_image(sheet, frame, width, height, scale):
 
     return image
 
-width, height = 1200, 800
-window = pygame.display.set_mode((width, height))
-pygame.display.set_caption("Mini-Game Day")
-
-# Init graphics
-ground_image = pygame.image.load("./Forest/PNG/Background/Layer_0000.png")
-ground_image = pygame.transform.scale(ground_image, (width,height))
-ground_width = ground_image.get_width()
-ground_height = ground_image.get_height()
-
-all_animations = {"right": {}, "left": {} }
-last_update = pygame.time.get_ticks()
-frame = 0
-
-sprite_width = 64 
-sprite_height = 64
-
-dir1 = "./merchant"
-paths = ["idle", "walk"]
-for path in paths:
-    sprite_sheet = pygame.image.load(join(dir1, path) + ".png").convert_alpha()
-    animation = []
-    animation_flipped = []
-    for x in range(sprite_sheet.get_width() // sprite_width):
-        animation.append(get_sprite_image(sprite_sheet, x, 64, 64, 2.6))
-        flipped = pygame.transform.flip(get_sprite_image(sprite_sheet, x, 64, 64, 2.6), True, False)
-        flipped.set_colorkey((0,0,0))
-        animation_flipped.append(flipped)
-    all_animations["right"][path] = animation
-    all_animations["left"][path] = animation_flipped
-
+def character_animations():
+    all_animations = {"right": {}, "left": {} }
+    
+    sprite_width = 64 
+    sprite_height = 64
+    
+    dir1 = "./merchant"
+    paths = ["idle", "walk"]
+    for path in paths:
+        sprite_sheet = pygame.image.load(join(dir1, path) + ".png").convert_alpha()
+        animation = []
+        animation_flipped = []
+        for x in range(sprite_sheet.get_width() // sprite_width):
+            animation.append(get_sprite_image(sprite_sheet, x, 64, 64, 2.6))
+            flipped = pygame.transform.flip(get_sprite_image(sprite_sheet, x, 64, 64, 2.6), True, False)
+            flipped.set_colorkey((0,0,0))
+            animation_flipped.append(flipped)
+        all_animations["right"][path] = animation
+        all_animations["left"][path] = animation_flipped
+    return all_animations
 
 # background
-bg_images = []
-for i in range(0, 1):
-    n = i // 10
-    m = i % 10
-    # bg_image = pygame.image.load(f"./Forest/PNG/Background/Layer_00{n}{m}.png")
-    bg_image = pygame.image.load("Background.png").convert()
-    bg_image = pygame.transform.scale(bg_image, (width,height))
-    bg_images.append(bg_image)
+def load_background():
+    bg_images = []
+    for i in range(0, 1):
+        n = i // 10
+        m = i % 10
+        # bg_image = pygame.image.load(f"./Forest/PNG/Background/Layer_00{n}{m}.png")
+        bg_image = pygame.image.load("Background.png").convert()
+        bg_image = pygame.transform.scale(bg_image, (width,height))
+        bg_images.append(bg_image)
+    return bg_images    
 
 
 # for cherry
@@ -165,6 +159,7 @@ def get_block(size):
     return pygame.transform.scale2x(surface)
 
 def draw_bg():
+    bg_images = load_background()
     for x in range(3):
         speed = 1
         for i in reversed(bg_images):
@@ -247,7 +242,7 @@ def handle_vertical_collision(player, objects, dy):
 
     return collided_objects
 
-player = Player(width * 0.2, height * 0.5, 75, 75, all_animations)
+player = Player(width * 0.2, height * 0.5, 75, 75, character_animations())
 
 block_size = 96
 
